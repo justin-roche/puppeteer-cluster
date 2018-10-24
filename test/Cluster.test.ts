@@ -451,6 +451,7 @@ describe('Repair', () => {
 
         describe(`concurrency: ${concurrency}`, () => {
             test('Repair unexpected crash', async () => {
+                expect.assertions(2);
 
                 const cluster = await Cluster.launch({
                     concurrency,
@@ -467,11 +468,14 @@ describe('Repair', () => {
                     await page.browser().close();
 
                     // check if its actually crashed
-                    await expect(
-                        page.goto(TEST_URL),
-                    ).rejects.toMatchObject({
-                        message: expect.stringMatching(/Protocol error/),
-                    });
+                    try {
+                        await page.goto(TEST_URL);
+                        expect(false).toBe(true); // fail
+                    } catch (err) {
+                        expect(err).toMatchObject({
+                            message: expect.stringMatching(/Protocol error/),
+                        });
+                    }
                 });
 
                 // second one should still work after the crash
