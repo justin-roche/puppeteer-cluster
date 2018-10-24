@@ -3,8 +3,6 @@ import * as http from 'http';
 import { timeoutExecute } from '../src/util';
 import { Page } from 'puppeteer';
 
-const kill = require('tree-kill');
-
 let testServer: http.Server;
 
 const TEST_URL = 'http://127.0.0.1:3001/';
@@ -463,12 +461,10 @@ describe('Repair', () => {
                     throw err;
                 });
 
-                // first job kills the browser
+                // first job closes the browser
                 cluster.queue(async ({ page }: { page: Page }) => {
-                    // kill process
-                    await new Promise((resolve) => {
-                        kill(page.browser().process().pid, 'SIGKILL', resolve);
-                    });
+                    // close browser
+                    await page.browser().close();
 
                     // check if its actually crashed
                     await expect(
